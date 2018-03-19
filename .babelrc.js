@@ -12,5 +12,11 @@ module.exports = {
   plugins: [
     process.env.PLUGINS && 'transform-es2015-modules-strip',
     '@babel/proposal-object-rest-spread'
-  ].filter(Boolean)
+  ].filter(Boolean),
+  env: {
+    test: {
+      plugins: [ 'istanbul' ]
+    }
+  }
 };
+/*不好意思拿这个来熟悉github的workflow*/

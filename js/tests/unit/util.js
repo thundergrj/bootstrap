@@ -4,7 +4,7 @@ $(function () {
   QUnit.module('util')
 
   QUnit.test('Util.getSelectorFromElement should return the correct element', function (assert) {
-    assert.expect(5)
+    assert.expect(2)
 
     var $el = $('<div data-target="body"></div>').appendTo($('#qunit-fixture'))
     assert.strictEqual(Util.getSelectorFromElement($el[0]), 'body')
@@ -12,18 +12,6 @@ $(function () {
     // Not found element
     var $el2 = $('<div data-target="#fakeDiv"></div>').appendTo($('#qunit-fixture'))
     assert.strictEqual(Util.getSelectorFromElement($el2[0]), null)
-
-    // Should escape ID and find the correct element
-    var $el3 = $('<div data-target="#collapse:Example"></div>').appendTo($('#qunit-fixture'))
-    $('<div id="collapse:Example"></div>').appendTo($('#qunit-fixture'))
-    assert.strictEqual(Util.getSelectorFromElement($el3[0]), '#collapse\\:Example')
-
-    // If $.escapeSelector doesn't exist in older jQuery versions (< 3)
-    var tmpEscapeSelector = $.escapeSelector
-    delete $.escapeSelector
-    assert.ok(typeof $.escapeSelector === 'undefined', '$.escapeSelector undefined')
-    assert.strictEqual(Util.getSelectorFromElement($el3[0]), '#collapse\\:Example')
-    $.escapeSelector = tmpEscapeSelector
   })
 
   QUnit.test('Util.typeCheckConfig should thrown an error when a bad config is passed', function (assert) {
@@ -52,6 +40,41 @@ $(function () {
     assert.strictEqual(Util.isElement($div), 1)
     assert.strictEqual(Util.isElement($div[0]), 1)
     assert.strictEqual(typeof Util.isElement({}) === 'undefined', true)
+  })
+
+  QUnit.test('Util.getTransitionDurationFromElement should accept transition durations in milliseconds', function (assert) {
+    assert.expect(1)
+    var $div = $('<div style="transition: all 300ms ease-out;"></div>').appendTo($('#qunit-fixture'))
+
+    assert.strictEqual(Util.getTransitionDurationFromElement($div[0]), 300)
+  })
+
+  QUnit.test('Util.getTransitionDurationFromElement should accept transition durations in seconds', function (assert) {
+    assert.expect(1)
+    var $div = $('<div style="transition: all .4s ease-out;"></div>').appendTo($('#qunit-fixture'))
+
+    assert.strictEqual(Util.getTransitionDurationFromElement($div[0]), 400)
+  })
+
+  QUnit.test('Util.getTransitionDurationFromElement should get the first transition duration if multiple transition durations are defined', function (assert) {
+    assert.expect(1)
+    var $div = $('<div style="transition: transform .3s ease-out, opacity .2s;"></div>').appendTo($('#qunit-fixture'))
+
+    assert.strictEqual(Util.getTransitionDurationFromElement($div[0]), 300)
+  })
+
+  QUnit.test('Util.getTransitionDurationFromElement should return 0 if transition duration is not defined', function (assert) {
+    assert.expect(1)
+    var $div = $('<div></div>').appendTo($('#qunit-fixture'))
+
+    assert.strictEqual(Util.getTransitionDurationFromElement($div[0]), 0)
+  })
+
+  QUnit.test('Util.getTransitionDurationFromElement should return 0 if element is not found in DOM', function (assert) {
+    assert.expect(1)
+    var $div = $('#fake-id')
+
+    assert.strictEqual(Util.getTransitionDurationFromElement($div[0]), 0)
   })
 
   QUnit.test('Util.getUID should generate a new id uniq', function (assert) {

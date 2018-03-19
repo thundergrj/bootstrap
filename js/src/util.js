@@ -17,10 +17,11 @@ const Util = (($) => {
   let transition = false
 
   const MAX_UID = 1000000
+  const MILLISECONDS_MULTIPLIER = 1000
 
   // Shoutout AngusCroll (https://goo.gl/pxwQGp)
   function toType(obj) {
-    return {}.toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase()
+    return {}.toString.call(obj).match(/\s([a-z]+)/i)[1].toLowerCase()
   }
 
   function getSpecialTransitionEndEvent() {
@@ -72,15 +73,6 @@ const Util = (($) => {
     }
   }
 
-  function escapeId(selector) {
-    // We escape IDs in case of special selectors (selector = '#myId:something')
-    // $.escapeSelector does not exist in jQuery < 3
-    selector = typeof $.escapeSelector === 'function' ? $.escapeSelector(selector).substr(1)
-      : selector.replace(/(:|\.|\[|\]|,|=|@)/g, '\\$1')
-
-    return selector
-  }
-
   /**
    * --------------------------------------------------------------------------
    * Public Util Api
@@ -105,17 +97,32 @@ const Util = (($) => {
         selector = element.getAttribute('href') || ''
       }
 
-      // If it's an ID
-      if (selector.charAt(0) === '#') {
-        selector = escapeId(selector)
-      }
-
       try {
         const $selector = $(document).find(selector)
         return $selector.length > 0 ? selector : null
       } catch (err) {
         return null
       }
+    },
+
+    getTransitionDurationFromElement(element) {
+      if (!element) {
+        return 0
+      }
+
+      // Get transition-duration of the element
+      let transitionDuration = $(element).css('transition-duration')
+      const floatTransitionDuration = parseFloat(transitionDuration)
+
+      // Return 0 if element or transition duration is not found
+      if (!floatTransitionDuration) {
+        return 0
+      }
+
+      // If multiple durations are defined, take the first
+      transitionDuration = transitionDuration.split(',')[0]
+
+      return parseFloat(transitionDuration) * MILLISECONDS_MULTIPLIER
     },
 
     reflow(element) {
